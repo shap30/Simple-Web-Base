@@ -8,28 +8,21 @@
 </head>
 
 <body>
-  <!-- Login box -->
   <div class="login-box">
     <h1>Login</h1>
     <form id="loginForm">
-      <!-- Email input -->
       <label>Email</label>
       <input type="email" id="EmailInput" placeholder="" />
-      <!-- Password input -->
       <label>Password</label>
       <input type="password" id="PasswordInput" placeholder="" />
-      <!-- Submit button -->
       <input type="button" value="Submit" id="loginButton" />
-      <!-- Forgot Password button -->
       <input type="button" value="Forgot Password" id="forgotPasswordButton" />
     </form>
   </div>
-  <!-- Registration link -->
   <p class="para-2">
     Not have an account? <a href="register.html">Sign Up Here</a>
   </p>
 
-  <!-- Firebase and app logic -->
   <script type="module">
     // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
@@ -52,8 +45,10 @@
     const auth = getAuth(app);
     const db = getDatabase();
 
-    // Event listeners
+    // Event listener for the login button
     document.getElementById("loginButton").addEventListener("click", loginUser);
+
+    // Event listener for the "Forgot Password" button
     document.getElementById("forgotPasswordButton").addEventListener("click", forgotPassword);
 
     // Function to handle user login
