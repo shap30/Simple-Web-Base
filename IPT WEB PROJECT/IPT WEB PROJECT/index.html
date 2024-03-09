@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>LOGIN | REGISTRATION</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Login box -->
+  <div class="login-box">
+    <h1>Login</h1>
+    <form id="loginForm">
+      <!-- Email input -->
+      <label>Email</label>
+      <input type="email" id="EmailInput" placeholder="" />
+      <!-- Password input -->
+      <label>Password</label>
+      <input type="password" id="PasswordInput" placeholder="" />
+      <!-- Submit button -->
+      <input type="button" value="Submit" id="loginButton" />
+      <!-- Forgot Password button -->
+      <input type="button" value="Forgot Password" id="forgotPasswordButton" />
+    </form>
+  </div>
+  <!-- Registration link -->
+  <p class="para-2">
+    Not have an account? <a href="register.html">Sign Up Here</a>
+  </p>
+
+  <!-- Firebase and app logic -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js";
+    import { getDatabase, ref, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYWFwaH62X_9iHr9AjzpC65mn3JyE_b-Y",
+      authDomain: "ipt-project-firebase.firebaseapp.com",
+      databaseURL: "https://ipt-project-firebase-default-rtdb.firebaseio.com",
+      projectId: "ipt-project-firebase",
+      storageBucket: "ipt-project-firebase.appspot.com",
+      messagingSenderId: "672891441094",
+      appId: "1:672891441094:web:f6c42fe63382f6b1e0acc7"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase();
+
+    // Event listeners
+    document.getElementById("loginButton").addEventListener("click", loginUser);
+    document.getElementById("forgotPasswordButton").addEventListener("click", forgotPassword);
+
+    // Function to handle user login
+    function loginUser() {
+      const emailInput = document.getElementById("EmailInput").value;
+      const passwordInput = document.getElementById("PasswordInput").value;
+
+      // Sign in with email and password
+      signInWithEmailAndPassword(auth, emailInput, passwordInput)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          // Check if the email is verified
+          if (user.emailVerified) {
+            alert("User Successfully Logged In");
+            // Redirect to home.html after a successful login
+            window.location.href = "home.html";
+          } else {
+            alert("Your email is not verified. Please check your email and verify your account.");
+          }
+        })
+        .catch((error) => {
+          handleAuthError(error);
+        });
+    }
+
+    // Function to initiate the "Forgot Password" process
+    function forgotPassword() {
+      // Retrieve the email input value
+      const emailInput = document.getElementById("EmailInput").value;
+
+      // Call the Firebase sendPasswordResetEmail function
+      sendPasswordResetEmail(auth, emailInput)
+        .then(() => {
+          alert("Password reset email sent. Check your inbox and follow the instructions to reset your password.");
+        })
+        .catch((error) => {
+          handleAuthError(error);
+        });
+    }
+
+    // Helper function to handle authentication errors
+    function handleAuthError(error) {
+      alert(`Authentication Error: ${error.message}`);
+      console.error(error);
+    }
+
+    // Add a real-time listener for user data changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setupRealtimeListener(user.uid);
+      }
+    });
+
+    // Function to set up a real-time listener for user data changes
+    function setupRealtimeListener(userId) {
+      const userRef = ref(db, 'UsersAuthList/' + userId);
+
+      // Set up a real-time listener to update the user data on changes
+      onValue(userRef, (snapshot) => {
+        const userData = snapshot.val();
+        sessionStorage.setItem('userData', JSON.stringify(userData));
+      });
+    }
+  </script>
+</body>
+
+</html>

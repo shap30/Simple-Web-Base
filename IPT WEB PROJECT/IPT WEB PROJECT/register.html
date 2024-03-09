@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>REGISTRATION</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="signup-box">
+    <h1>Sign Up</h1>
+    <h4>It's free and only takes a minute</h4>
+    <form id="signupForm">
+      <label>First Name</label>
+      <input type="text" id="FirstNameInput" placeholder="" />
+      <label>Last Name</label>
+      <input type="text" id="LastNameInput" placeholder="" />
+      <label>Email</label>
+      <input type="email" id="EmailInput" placeholder="" />
+      <label>Contact</label>
+      <input type="text" id="ContactInput" placeholder="" />
+      <label>Password</label>
+      <input type="password" id="PasswordInput" placeholder="" />
+      <label>Confirm Password</label>
+      <input type="password" id="ConfirmPasswordInput" placeholder="" />
+      <input type="button" value="Submit" id="registerButton" />
+    </form>
+    <p>
+      By clicking the Sign Up button, you agree to our <br />
+      <a href="#">Terms and Condition</a> and <a href="#">Policy Privacy</a>
+    </p>
+  </div>
+  <p class="para-2">
+    Already have an account? <a href="index.html">Login here</a>
+  </p>
+
+  <script type="module">
+    // Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js";
+    import { getDatabase, set, ref, get } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-database.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js";
+ 
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYWFwaH62X_9iHr9AjzpC65mn3JyE_b-Y",
+      authDomain: "ipt-project-firebase.firebaseapp.com",
+      databaseURL: "https://ipt-project-firebase-default-rtdb.firebaseio.com",
+      projectId: "ipt-project-firebase",
+      storageBucket: "ipt-project-firebase.appspot.com",
+      messagingSenderId: "672891441094",
+      appId: "1:672891441094:web:f6c42fe63382f6b1e0acc7"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase();
+    const auth = getAuth(app);
+  
+    // Event listener for the register button
+    document.getElementById("registerButton").addEventListener("click", registerUser);
+  
+    // Function to register a new user
+    function registerUser() {
+      // Get input elements
+      let FirstNameInput = document.getElementById("FirstNameInput");
+      let LastNameInput = document.getElementById("LastNameInput");
+      let EmailInput = document.getElementById("EmailInput");
+      let ContactInput = document.getElementById("ContactInput");
+      let PasswordInput = document.getElementById("PasswordInput");
+      let ConfirmPasswordInput = document.getElementById("ConfirmPasswordInput");
+  
+      // Check if passwords match
+      if (PasswordInput.value !== ConfirmPasswordInput.value) {
+        alert("Password does not match the confirmation password.");
+        return;
+      }
+  
+      // Create user with email and password
+      createUserWithEmailAndPassword(auth, EmailInput.value, PasswordInput.value)
+        .then((credentials) => {
+          // Save user data in the database
+          set(ref(db, 'UsersAuthList/' + credentials.user.uid), {
+            a_Email: EmailInput.value,
+            b_Password: PasswordInput.value,
+            c_FirstName: FirstNameInput.value,
+            d_LastName: LastNameInput.value,
+            f_Contact: ContactInput.value,  // New field for Contact
+            e_Verified: false
+          });
+  
+          // Display alert before redirecting
+          alert("User Successfully Created. Please check your email for verification.");
+  
+          // Send verification email
+          sendEmailVerification(credentials.user)
+            .then(() => {
+              // Redirect to login page after successful registration
+              window.location.href = "index.html";
+            })
+            .catch((error) => {
+              console.log('Verification Error: ', error.message);
+            });
+        })
+        .catch((error) => {
+          alert(error.message);
+          console.error(error.code, error.message);
+        });
+    }
+  
+    // Check for email verification status when the user state changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // Check if the email is verified
+        get(ref(db, 'UsersAuthList/' + user.uid))
+          .then((snapshot) => {
+            const userData = snapshot.val();
+            if (userData && !userData.e_Verified) {
+              alert('Your email is not verified. Please check your email and verify your account.');
+            }
+          })
+          .catch((error) => {
+            console.error('Error checking verification status:', error.message);
+          });
+      }
+    });
+  </script>
+</body>
+</html>
